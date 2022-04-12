@@ -1,13 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const Button = () => {
-  const [count, setCount] = useState(0);
-
-  return (
-    <button onClick={() => setCount(prev => prev + 1)}>
-      app2 button {count}
-    </button>
-  );
+const Button = ({ onClick }: { onClick: any }) => {
+  return <button onClick={onClick}>app2 button: GO HOME</button>;
 };
 
 export default Button;

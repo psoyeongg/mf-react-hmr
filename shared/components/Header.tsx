@@ -8,10 +8,11 @@ const Wrapper = styled.div`
   background-color: greenyellow;
 `;
 
-const Header = () => {
+const Header = ({ text }: { text: string }) => {
   return (
     <Wrapper>
-      <h1>Header</h1>
+      <h1>Header 🍫</h1>
+      <p>{text}</p>
     </Wrapper>
   );
 };
