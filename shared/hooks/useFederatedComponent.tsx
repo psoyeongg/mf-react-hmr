@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
 
-const loadComponent = (scope, module) => {
+const loadComponent = (scope: any, module: string) => {
   return async () => {
-    // Initializes the share scope. This fills it with known provided modules from this build and all remotes
+    // @ts-ignore
     await __webpack_init_sharing__('default');
-    const container = window[scope]; // or get the container somewhere else
-    // Initialize the container, it may provide shared modules
+    const container = window[scope];
+    // @ts-ignore
     await container.init(__webpack_share_scopes__.default);
-    const factory = await window[scope].get(module);
-    const Module = factory();
+    let Module;
+    try {
+      // @ts-ignore
+      const factory = await window[scope].get(module);
+      Module = factory();
+    } catch (e) {
+      console.error('loadComponent Error >>>>> ', e);
+      Module = import('../components/Error');
+    }
     return Module;
   };
 };
 
 const urlCache = new Set();
-const useDynamicScript = url => {
+const useDynamicScript = (
+  url: string,
+): { errorLoading: boolean; ready: boolean } => {
   const [ready, setReady] = useState(false);
   const [errorLoading, setErrorLoading] = useState(false);
 
@@ -62,23 +71,25 @@ const useDynamicScript = url => {
 
 const componentCache = new Map();
 
-const useFederatedComponent = (remoteUrl, scope, module) => {
+const useFederatedComponent = (
+  remoteUrl: string,
+  scope: string,
+  module: string,
+): { Component: any; errorLoading: boolean } => {
   const key = `${remoteUrl}-${scope}-${module}`;
   const [Component, setComponent] = useState(null);
 
   const { ready, errorLoading } = useDynamicScript(remoteUrl);
   useEffect(() => {
     if (Component) setComponent(null);
-    // Only recalculate when key changes
   }, [key]);
 
   useEffect(() => {
     if (ready && !Component) {
-      const Comp = React.lazy(loadComponent(scope, module));
+      const Comp: any = React.lazy(loadComponent(scope, module));
       componentCache.set(key, Comp);
       setComponent(Comp);
     }
-    // key includes all dependencies (scope/module)
   }, [Component, ready, key]);
 
   return { Component, errorLoading };
